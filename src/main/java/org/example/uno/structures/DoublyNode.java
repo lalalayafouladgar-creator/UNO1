@@ -12,4 +12,11 @@ public class DoublyNode {
         this.prev=null;
     }
 
+    public Player getData() {
+        return data;
+    }
+
+    public DoublyNode getNext() {
+        return next;
+    }
 }

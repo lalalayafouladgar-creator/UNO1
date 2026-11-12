@@ -23,6 +23,8 @@ public class Card {
         return value;
     }
 
-
+    public void setColor(Color color) {
+        this.color = color;
+    }
 }
 
