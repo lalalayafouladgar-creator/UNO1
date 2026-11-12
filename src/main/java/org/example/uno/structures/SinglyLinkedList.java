@@ -136,4 +136,10 @@ public class SinglyLinkedList<T> {
         }
         head = mergeSort(head, cmp);
     }
+
+    public void clear() {
+        head = null;
+        tail = null;
+        size = 0;
+    }
 }

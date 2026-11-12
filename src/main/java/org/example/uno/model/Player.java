@@ -48,4 +48,8 @@ public abstract class Player {
     public Card removeCard(int index) {
         return hand.removeAt(index);
     }
+
+    public void clearHand() {
+        hand.clear();
+    }
 }

@@ -19,4 +19,8 @@ public class DoublyNode {
     public DoublyNode getNext() {
         return next;
     }
+
+    public DoublyNode getPrev() {
+        return prev;
+    }
 }
