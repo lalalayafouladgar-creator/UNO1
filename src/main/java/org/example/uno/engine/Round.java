@@ -6,6 +6,7 @@ import org.example.uno.model.Color;
 import org.example.uno.model.Player;
 import org.example.uno.structures.CustomStack;
 import org.example.uno.structures.DoublyCircularLinkedList;
+import org.example.uno.structures.DoublyNode;
 
 public class Round {
     private Deck deck;
@@ -32,13 +33,64 @@ public class Round {
         winner = null;
     }
 
+    public Player getCurrentPlayer() {
+        return turnManager.getCurrentPlayer();
+    }
+
+    public Card getTopCard() {
+        return discardPile.getTopCard();
+    }
+
+    public Color getActiveColor() {
+        return activeColor;
+    }
+
+    public boolean hasPenalty() {
+        return !penaltyStack.isEmpty();
+    }
+
     public void startRound() {
+        turnManager.resetTurnState();
+        DoublyNode current = players.getHead();
+        for (int i = 0; i < players.size(); i++) {
+            Player player = current.getData();
+            player.clearHand();
+            current = current.getNext();
+        }
         deck.initializeDeck();
         deck.giveCardToPlayer(players);
         discardPile.firstCard(deck);
         activeColor = discardPile.getTopCard().getColor();
     }
 
+    public void applyFirstCardEffect(Color chosenColor) {
+        Card firstCard = discardPile.getTopCard();
+        CardType type = firstCard.getCardType();
+        if (type == CardType.SKIP) {
+            turnManager.advanceTurn(1);
+        }
+        else if (type == CardType.REVERSE) {
+            if (players.size() == 2) {
+                turnManager.advanceTurn(1);
+            }
+            else {
+                turnManager.reverseDirection();
+            }
+        }
+        else if (type == CardType.DRAW_TWO) {
+            Player player = turnManager.getCurrentPlayer();
+            for (int i = 0; i < 2; i++) {
+                if (deck.isEmpty()) {
+                    deck.rebuildDeck(discardPile);
+                }
+                player.addCard(deck.drawCard());
+            }
+            turnManager.advanceTurn(1);
+        }
+        else if (type == CardType.WILD) {
+            activeColor = chosenColor;
+        }
+    }
 
     public boolean playCard(int cardIndex, Color chosenColor) {
         Player player = turnManager.getCurrentPlayer();
@@ -113,34 +165,30 @@ public class Round {
         }
     }
 
-    private int calculatePenalty(CustomStack<Integer> stack) {
-        if (stack.isEmpty()) {
+    private int calculatePenalty() {
+        if (penaltyStack.isEmpty()) {
             return 0;
         }
-        int value = stack.pop();
-        int sum = value + calculatePenalty(stack);
-        stack.push(value);
-        return sum;
+        return penaltyStack.pop() + calculatePenalty();
     }
 
     public int drawPenalty() {
-        if (finished || penaltyStack.isEmpty()) {
+        if (penaltyStack.isEmpty() || finished) {
             return 0;
         }
-        int total = calculatePenalty(penaltyStack);
         Player player = turnManager.getCurrentPlayer();
+        int total = calculatePenalty();
         for (int i = 0; i < total; i++) {
             if (deck.isEmpty()) {
                 deck.rebuildDeck(discardPile);
             }
+            if (deck.isEmpty()) {
+                break;
+            }
             Card card = deck.drawCard();
             player.addCard(card);
-        }
-        while (!penaltyStack.isEmpty()) {
-            penaltyStack.pop();
         }
         turnManager.advanceTurn(1);
         return total;
     }
-
 }

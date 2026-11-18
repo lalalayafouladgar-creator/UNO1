@@ -1,4 +1,4 @@
-package org.example.uno.controllre;
+package org.example.uno.controller;
 
 public class LeaderboardController {
 }
